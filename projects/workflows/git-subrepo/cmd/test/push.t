@@ -107,7 +107,7 @@ gitrepo=$OWNER/foo/bar/.gitrepo
 {
 	message=$(
 		cd "$OWNER/foo"
-		git subrepo push bar
+		git subrepo push bar --force-push
 	)
 
 	# Test the output:
@@ -142,7 +142,7 @@ test-exists \
 {
 	message=$(
 		cd "$OWNER/foo"
-		git subrepo push bar
+		git subrepo push bar --force-push
 	)
 
 	# Test the output:
@@ -169,7 +169,7 @@ test-exists \
 {
 	message=$(
 		cd "$OWNER/foo"
-		git subrepo push bar 2>&1 || true
+		git subrepo push bar --force-push 2>&1
 	)
 
 	# Test the output:
@@ -177,6 +177,20 @@ test-exists \
 		"git-subrepo: There are new changes upstream, you need to pull first." \
 		'Stopped by other push'
 }
+
+(
+	# Create a situation with new changes upstream
+	cd "$UPSTREAM/bar"
+	git checkout -b new-branch
+	add-new-files new_upstream_changes
+	git commit -am "New upstream changes on a new branch"
+	git checkout master
+	git merge new-branch
+	# Attempt force-push with new changes upstream
+	cd "$OWNER/foo"
+	git subrepo push bar --force-push
+	is "$?" 0 "force-push succeeds despite new changes upstream"
+)
 
 done_testing
 
