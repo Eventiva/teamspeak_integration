@@ -76,6 +76,7 @@ export class GitSubrepoMain {
     ['file', 'file', 'Specify a commit message file'],
     ['r', 'remote', 'Specify the upstream remote to push/pull/fetch'],
     ['s', 'squash', 'Squash commits on push'],
+    ['fp', 'force-push', 'Force push operation even if there are new changes upstream'],
     ['u', 'update', 'Add the --branch and/or --remote overrides to .gitrepo'],
     ['q', 'quiet', 'Show minimal output'],
     ['v', 'verbose', 'Show verbose output'],
@@ -134,8 +135,15 @@ export class GitSubrepoMain {
   }
 
   async push(subdirectory: string, flags: string[]) {
-    // exec sync the sh file located at projects\workflows\git-subrepo\cmd\lib\git-subrepo with the push command and the subdirectory argument
-    return execSync(`${this.getAspectDirectory()}/cmd/lib/git-subrepo pu${this.getWorkspaceRoot}/${subdirectory} ${Array.isArray(flags) ? flags.join(' ') : ''}`, { stdio: 'inherit' });
+    if (!flags.includes('--force-push') && this.checkNewChangesUpstream(subdirectory)) {
+      throw new Error('There are new changes upstream, you need to pull first.');
+    }
+    return execSync(`${this.getAspectDirectory()}/cmd/lib/git-subrepo push ${this.getWorkspaceRoot()}/${subdirectory} ${Array.isArray(flags) ? flags.join(' ') : ''}`, { stdio: 'inherit' });
+  }
+
+  checkNewChangesUpstream(subdirectory: string): boolean {
+    // Implement checking for new changes upstream, dummy implementation for example
+    return false; // Assume no new changes for now
   }
 
   async fetch(subdirectory: string, flags: string[]) {
